@@ -1,13 +1,13 @@
-# nodejs-simple-cookies
+# nodejs-encode-decode-cookies
 Простой модуль для взаимодействия с кукисами.
 ```
 Позволяет добавлять, удалять и получать требуемые кукисы.
-Позволяет устанвить простое шифрование/расшифровку кукисов.
+Позволяет устанвить простое шифрование кукисов.
 ```
 
 ## Подключение
 ```JS
-var cookies = require('simple-cookies')({
+var cookies = require('encode-decode-cookies')({
 	password : 'password' 	//Пароль шифрования кукисов ('' - без шифрования)
 });
 
@@ -29,22 +29,22 @@ server.listen(2020);
 
 ### Установка кукиса (до установки заголовков res.writeHead)
 ```JS
-	req.cookies.set( name, value, time, path || '/');
+req.cookies.set( name, value, time, path || '/');
 ```
 
 ### Удаление кукиса (до установки заголовков res.writeHead)
 ```JS
-	req.cookies.delete( name );
+req.cookies.delete( name );
 ```
 
 ### Получение всех кукисов
 ```JS
-	var my_cookies = req.cookies.parse;
+var my_cookies = req.cookies.parse;
 ```
 
 ### Получение отдельного кукиса
 ```JS
-	var user_id = req.cookies.parse['user_id'];
+var user_id = req.cookies.parse['user_id'];
 ```
 
 ## Тестирование
