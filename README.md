@@ -3,6 +3,12 @@
 ```
 Позволяет добавлять, удалять и получать требуемые кукисы.
 Позволяет устанвить простое шифрование кукисов.
+Метод "start" помещает функционал, название и значение кукисов в req.cookies
+
+req.cookies.headers - строка со списком кукисов до расшифровки
+req.cookies.parse	- объект с названиями и значениями кукисов
+req.cookies.set		- функция установки кукиса
+req.cookies.delete	- функция удаления кукиса
 ```
 
 ## Подключение
@@ -14,8 +20,9 @@ var cookies = require('encode-decode-cookies')({
 //Формируем задачу
 var app = function(req, res) {
 	
-	//Подключаем и запускаем модуль кукисов
-	req.cookies = cookies.start(req, res);
+	cookies.start(req, res);
+
+	console.log(req.cookies);
 
 	...
 	
@@ -37,9 +44,13 @@ req.cookies.set( name, value, time, path || '/');
 req.cookies.delete( name );
 ```
 
-### Получение всех кукисов
+### Получение всех кукисов до расшифровки
+
+var my_cookies_encode = req.cookies.headers
+
+### Получение всех кукисов после расшифровки
 ```JS
-var my_cookies = req.cookies.parse;
+var my_cookies_decode = req.cookies.parse;
 ```
 
 ### Получение отдельного кукиса

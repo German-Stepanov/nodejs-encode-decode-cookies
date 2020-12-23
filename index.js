@@ -38,50 +38,55 @@ var Cookies = function (config) {
 	//Старт модуля
 	this.start = function (req, res) {
 		//Формируеи объект
-		var result = {};
+		req.cookies = {};
 		//Значение до расшифровки
-		result.headers	= req.headers.cookie;
+		req.cookies.headers	= req.headers.cookie;
 		//Функция установки кукиса
-		result.set		= function (name, value, time, path) {
+		req.cookies.set	= function (name_decode, value_decode, time, path) {
 			time = time==null ? 0 : Number(time);
 			path = path==null ? '/' : path;
-			//Считываем массив существующих в заголовке кукисов
-			var cookies = res.getHeader ('Set-Cookie') || [];
+			//Считываем массив существующих в заголовке зашифрованных кукисов
+			var cookies_encode = res.getHeader ('Set-Cookie') || [];
 			//Добавляем новый кукис
-			cookies.push([
-				self.encode(name + '', self.config.password) + '=' + self.encode(value + '', self.config.password),
+			var name_encode  = self.encode(name_decode + '', self.config.password);
+			var value_encode = self.encode(value_decode + '', self.config.password);
+			cookies_encode.push([
+				name_encode + '=' + value_encode,
 				'path' + '=' + path,
 				'expires' + '=' + (time ? (new Date(Date.now() + time*1000)).toGMTString() : 0),
 			].join('; '));
 			//Устанавливаем в заголовок обновленный массив кукисов
-			res.setHeader('Set-Cookie', cookies);
+			res.setHeader('Set-Cookie', cookies_encode);
 		};
 		//Функция удаления кукиса
-		result.delete	= function (name) {
+		req.cookies.delete	= function (name) {
 			this.set(name, '', -1);
 		};
 		//Значения расшифрованных кукисов
-		result.parse = {};
+		req.cookies.parse = {};
 		if (req.headers.cookie) {
 			//Парсим
-			var cookies = req.headers.cookie.replace(/\ +/g, '').split(';');
-			for (var key in cookies) {
+			var cookies_encode = req.headers.cookie.replace(/\ +/g, '').split(';');
+			for (var key in cookies_encode) {
 				//пара ключ-значение
-				var key_value = cookies[key].split('=');
-				if (key_value[0] && key_value[1]) {
-					result.parse[this.decode(key_value[0], this.config.password)] = this.decode(key_value[1], this.config.password);
+				var name_value = cookies_encode[key].split('=');
+				var name_encode = name_value[0];
+				var value_encode = name_value[1];
+				if (name_encode && value_encode) {
+					var name_decode 	= this.decode(name_encode, this.config.password);
+					var value_decode 	= this.decode(value_encode, this.config.password)
+					req.cookies.parse[name_decode] = value_decode;
 				};
 			};
-			//Менняем зашифрованное поле req.headers.cookie
 			if (this.config.password) {
-				var headers_cookie = [];
-				for (var key in result.parse) {
-					headers_cookie.push(key + '=' + result.parse[key]);
+				//Расшифровываем req.headers.cookie
+				var cookies_decode = [];
+				for (var name_decode in req.cookies.parse) {
+					cookies_decode.push(name_decode + '=' + req.cookies.parse[name_decode]);
 				};
-				req.headers.cookie = headers_cookie.join('; ');
+				req.headers.cookie = cookies_decode.join('; ');
 			}
 		}
-		return result;
 	};
 };
 module.exports = function (config) {

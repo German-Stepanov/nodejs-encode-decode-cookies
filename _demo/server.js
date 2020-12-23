@@ -30,6 +30,51 @@ myConfig.cookies = {
 };
 var cookies = require('encode-decode-cookies')(myConfig.cookies);
 
+var controller = function(req, res, next) {
+	var url = req.url.split('/');
+
+	if (url[1]=='set') {
+		//Установка
+		var name = url[2];
+		var value = url[3];
+		var time = Number(url[4]);
+		req.cookies.set( name, value, time, '/');
+		//Возврат на главную страницу
+		res.writeHead(302, {'Location':'/'});
+		res.end();
+		return next();
+	} else if (url[1]=='del') {
+		//Удаление
+		var name = url[2];
+		req.cookies.delete(name);
+		//Возврат на главную страницу
+		res.writeHead(302, {'Location':'/'});
+		res.end();
+		return next();
+	} else {
+		//Вывод главной страницы
+		res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+		res.write('<style>* {font-size:18px} h1 {font-size:32px;margin-bottom:10px} h2 {font-size:24px;margin-bottom:10px} a {text-decoration:none; }</style>');
+		res.write('<h1>Главная страница <a href="/" title="Обновить">(ОБНОВИТЬ)</a></h1> ');
+		res.write('<h2>Зашифрованные кукисы клиента</h2>');
+		res.write('req.cookies.headers = "<b>' + req.cookies.headers + '</b>"');
+		res.write('<h2>Расшифрованные кукисы клиента</h2>');
+		res.write('req.cookies.parse = ');
+		res.write(req.cookies.parse.myFormat());
+		res.write('<br/><br/>');
+		//Добавляем меню
+		res.write('<h2>УСТАНОВИТЬ ДАННЫЕ<br/>req.cookies.set( name, value, time, "/")</h2>');
+		res.write('<div><a href="/set/user_id/17/15">Установить <b>user_id</b> значение <b>17</b> на <b>15 секунд</b></a></div>');
+		res.write('<div><a href="/set/status/active/20">Установить <b>status</b> значение <b>active</b> на <b>20 секунд</b></a></div>');
+		res.write('<div><a href="/set/session_name/ABCDEFGH/0">Установить <b>session_name</b> значение <b>ABCDEFGH</b> на <b>все время сессии</b></a></div>');
+		res.write('<h2>УДАЛИТЬ ДАННЫЕ<br/>req.cookies.delete(name)</h2>');
+		res.write('<div><a href="/del/user_id">Удалить <b>user_id</b></a></div>');
+		res.write('<div><a href="/del/session_name">Удалить <b>session_name</b></a></div>');
+		res.write('<div><a href="/del/status">Удалить <b>status</b></a></div>');
+		res.end();
+		return next();
+	}
+}
 //Формируем задачу
 var app = function(req, res) {
 	
@@ -38,49 +83,16 @@ var app = function(req, res) {
 		console.log('\nПолучен запрос req.url', req.url);
 		console.time('app');
 	}
-	//Подключаем и запускаем модуль кукисов
-	req.cookies = cookies.start(req, res);
+	//Подключаем и запускаем модуль кукисов --> req.cookies
+	cookies.start(req, res);
 	
-	var url = req.url.split('/');
-	if (url[1]=='set') {
-		//Установка
-		var name = url[2];
-		var value = url[3];
-		var time = Number(url[4]);
-		req.cookies.set( name, value, time, '/');
-		res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-		res.write('<div style="color:blue">Установлено "' + name + '" значение "' + value + '" на ' + (time==0 ? 'все время сессии' : time + ' секунд') + '</div>');
-	} else if (url[1]=='del') {
-		//Удаление
-		var name = url[2];
-		req.cookies.delete(name);
-		res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-		res.write('<div style="color:blue">Удалено "' + name + '"</div>');
-	} else {
-		//Просмотр
-		res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-		res.write('req.cookies.headers = "<b>' + req.cookies.headers + '</b>"');
-		res.write('<br/><br/>');
-		res.write('req.cookies.parse = ');
-		res.write(req.cookies.parse.myFormat());
-	}
-	res.write('<style>* {font-size:18px} a {text-decoration:none; }</style>');
-	res.write('<br/><br/>');
-	res.write('<div><a href="/">Список значений</a></div>');
-	res.write('<br/>');
-	res.write('<div><a href="/set/user_id/17/15">Установить <b>user_id</b> значение <b>17</b> на <b>15 секунд</b></a></div>');
-	res.write('<div><a href="/set/status/active/20">Установить <b>status</b> значение <b>active</b> на <b>20 секунд</b></a></div>');
-	res.write('<div><a href="/set/session_name/ABCDEFGH/0">Установить <b>session_name</b> значение <b>ABCDEFGH</b> на <b>все время сессии</b></a></div>');
-	res.write('<br/>');
-	res.write('<div><a href="/del/user_id">Удалить <b>user_id</b></a></div>');
-	res.write('<div><a href="/del/session_name">Удалить <b>session_name</b></a></div>');
-	res.write('<div><a href="/del/status">Удалить <b>status</b></a></div>');
-	res.end();
-	
-	//Выводим общее время
-	if (myConfig.data.isDebug) {
-		console.timeEnd('app');
-	}
+	//Запуск контроллера обработки запросов
+	controller(req, res, function() {
+		//Выводим общее время
+		if (myConfig.data.isDebug) {
+			console.timeEnd('app');
+		}
+	});
 };
 //Создаем и запускаем сервер для задачи
 var server = require('http').createServer(app);

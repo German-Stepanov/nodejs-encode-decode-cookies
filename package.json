@@ -1,6 +1,6 @@
 {
   "name": "encode-decode-cookies",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Encoding-decoding for cookies",
   "main": "index.js",
   "scripts": {
