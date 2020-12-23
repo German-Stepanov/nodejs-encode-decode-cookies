@@ -5,7 +5,7 @@
 Позволяет устанвить простое шифрование кукисов.
 Метод "start" помещает функционал, название и значение кукисов в req.cookies
 
-req.cookies.headers - строка со списком кукисов до расшифровки
+req.cookies.headers 	- строка со списком кукисов до расшифровки
 req.cookies.parse	- объект с названиями и значениями кукисов
 req.cookies.set		- функция установки кукиса
 req.cookies.delete	- функция удаления кукиса
@@ -45,9 +45,9 @@ req.cookies.delete( name );
 ```
 
 ### Получение всех кукисов до расшифровки
-
+```JS
 var my_cookies_encode = req.cookies.headers
-
+```
 ### Получение всех кукисов после расшифровки
 ```JS
 var my_cookies_decode = req.cookies.parse;
